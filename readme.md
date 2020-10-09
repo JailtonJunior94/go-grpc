@@ -23,3 +23,8 @@ Exemplo de client e server.
 ```
 > go run client.go
 ```
+
+Gerar arquivo pb
+```
+> protoc --proto_path=proto proto/*.proto --go_out=plugins=grpc:pb
+```
