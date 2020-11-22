@@ -1,0 +1,32 @@
+name: Build and Publish
+
+on:
+    push:
+        branches:
+            - master
+
+jobs:
+    build-and-publish:
+        runs-on: ubuntu-20.04
+        steps:
+            - uses: actions/checkout@v2Q
+            - name: Build Docker Image
+              run: docker build . --tag go-grpc:v1
+
+            - name: Publish to Registry
+              uses: elgohr/Publish-Docker-Github-Action@master
+              with:
+                  name: jailtonjunior/go-grpc:v1
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: Azure Login
+              uses: azure/login@v1
+              with:
+                  creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+            - name: Azure WebApp Container - Deployment
+              uses: azure/webapps-deploy@v2
+              with:
+                  app-name: go-grpc
+                  images: jailtonjunior/go-grpc:v1

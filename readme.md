@@ -14,6 +14,10 @@ Exemplo de client e server.
 ```
 > choco install protoc
 ```
+Gerando arquivos com extensão `.pb.go` 
+```
+> protoc --proto_path=protos protos/*.proto --go_out=plugins=grpc:pb
+```
 ## Como Executar? 🔥
 1. Para executar o `server.go`, devemos utilizar o seguinte comando: 
 ```

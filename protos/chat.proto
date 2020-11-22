@@ -1,5 +1,5 @@
 syntax = "proto3";
-package chat;
+package protos;
 
 message Message {
   string body = 1;
