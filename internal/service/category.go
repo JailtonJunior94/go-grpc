@@ -32,3 +32,36 @@ func (c *CategoryService) CreateCategory(ctx context.Context, in *pb.CreateCateg
 		},
 	}, nil
 }
+
+func (c *CategoryService) Categories(ctx context.Context, in *pb.Blank) (*pb.CategoryList, error) {
+	categories, err := c.CategoryDB.FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	response := make([]*pb.Category, len(categories))
+	for index, category := range categories {
+		response[index] = &pb.Category{
+			Id:          category.ID,
+			Name:        category.Name,
+			Description: category.Description,
+		}
+	}
+
+	return &pb.CategoryList{Categories: response}, nil
+}
+
+func (c *CategoryService) FetchCategoryByID(ctx context.Context, in *pb.CategoryFetchRequest) (*pb.CategoryResponse, error) {
+	category, err := c.CategoryDB.Find(in.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.CategoryResponse{
+		Category: &pb.Category{
+			Id:          category.ID,
+			Name:        category.Name,
+			Description: category.Description,
+		},
+	}, nil
+}
