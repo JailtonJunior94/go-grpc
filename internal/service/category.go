@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
+	"io"
 
 	"github.com/jailtonjunior94/go-grpc/internal/database"
 	"github.com/jailtonjunior94/go-grpc/internal/pb"
@@ -64,4 +66,55 @@ func (c *CategoryService) FetchCategoryByID(ctx context.Context, in *pb.Category
 			Description: category.Description,
 		},
 	}, nil
+}
+
+func (c *CategoryService) CreateCategoryStream(stream pb.CategoryService_CreateCategoryStreamServer) error {
+	categories := &pb.CategoryList{}
+	for {
+		category, err := stream.Recv()
+		if errors.Is(err, io.EOF) {
+			return stream.SendAndClose(categories)
+		}
+
+		if err != nil {
+			return err
+		}
+
+		categoryResult, err := c.CategoryDB.Create(category.Name, category.Description)
+		if err != nil {
+			return err
+		}
+
+		categories.Categories = append(categories.Categories, &pb.Category{
+			Id:          categoryResult.ID,
+			Name:        category.Name,
+			Description: category.Description,
+		})
+	}
+}
+
+func (c *CategoryService) CreateCategoryStreamBiDirectional(stream pb.CategoryService_CreateCategoryStreamBiDirectionalServer) error {
+	for {
+		category, err := stream.Recv()
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		categoryResult, err := c.CategoryDB.Create(category.Name, category.Description)
+		if err != nil {
+			return err
+		}
+
+		if err = stream.Send(&pb.Category{
+			Id:          categoryResult.ID,
+			Name:        category.Name,
+			Description: category.Description,
+		}); err != nil {
+			return err
+		}
+	}
 }
